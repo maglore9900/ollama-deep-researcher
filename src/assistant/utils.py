@@ -4,6 +4,67 @@ from typing import Dict, Any, List, Optional
 from langsmith import traceable
 from tavily import TavilyClient
 from duckduckgo_search import DDGS
+from langchain_community.utilities import SearxSearchWrapper
+
+
+def searXNG_search(query: str, max_results: int = 3, fetch_full_page: bool = False) -> Dict[str, List[Dict[str, str]]]:
+    """Search the web using searXNG.
+   
+    Args:
+        query (str): The search query to execute
+        max_results (int): Maximum number of results to return
+        fetch_full_page (bool): Whether to fetch the full page content
+       
+    Returns:
+        dict: Search response containing:
+            - results (list): List of search result dictionaries, each containing:
+                - title (str): Title of the search result
+                - url (str): URL of the search result
+                - content (str): Snippet/summary of the content
+                - raw_content (str): Full page content if fetch_full_page is True, otherwise same as content
+    """
+    try:
+        search = SearxSearchWrapper(searx_host="http://remote:8080")
+        search_results = search.results(query, num_results=max_results)
+        
+        results = []
+        for r in search_results:
+            url = r.get('link')
+            title = r.get('title')
+            content = r.get('snippet')
+            
+            if not all([url, title, content]):
+                print(f"Warning: Incomplete result from SearXNG: {r}")
+                continue
+                
+            raw_content = content
+            if fetch_full_page:
+                try:
+                    # Try to fetch the full page content
+                    import urllib.request
+                    from bs4 import BeautifulSoup
+                    response = urllib.request.urlopen(url)
+                    html = response.read()
+                    soup = BeautifulSoup(html, 'html.parser')
+                    raw_content = soup.get_text()
+                    
+                except Exception as e:
+                    print(f"Warning: Failed to fetch full page content for {url}: {str(e)}")
+            
+            # Add result to list
+            result = {
+                "title": title,
+                "url": url,
+                "content": content,
+                "raw_content": raw_content
+            }
+            results.append(result)
+        
+        return {"results": results}
+    except Exception as e:
+        print(f"Error in SearXNG search: {str(e)}")
+        print(f"Full error details: {type(e).__name__}")
+        return {"results": []}
 
 def deduplicate_and_format_sources(search_response, max_tokens_per_source, include_raw_content=False):
     """
