@@ -24,7 +24,7 @@ def searXNG_search(query: str, max_results: int = 3, fetch_full_page: bool = Fal
                 - raw_content (str): Full page content if fetch_full_page is True, otherwise same as content
     """
     try:
-        search = SearxSearchWrapper(searx_host="http://remote:8080")
+        search = SearxSearchWrapper(searx_host=(os.getenv("SEARXNG_URL", "http://localhost:8080")))
         search_results = search.results(query, num_results=max_results)
         
         results = []
