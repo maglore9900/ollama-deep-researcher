@@ -1,15 +1,5 @@
-from datetime import datetime
-
-# Get current date in a readable format
-def get_current_date():
-    return datetime.now().strftime("%B %d, %Y")
-
 query_writer_instructions="""Your goal is to generate a targeted web search query.
-
-<CONTEXT>
-Current date: {current_date}
-Please ensure your queries account for the most current information available as of this date.
-</CONTEXT>
+The query will gather information related to a specific topic.
 
 <TOPIC>
 {research_topic}
@@ -18,6 +8,7 @@ Please ensure your queries account for the most current information available as
 <FORMAT>
 Format your response as a JSON object with ALL three of these exact keys:
    - "query": The actual search query string
+   - "aspect": The specific aspect of the topic being researched
    - "rationale": Brief explanation of why this query is relevant
 </FORMAT>
 
@@ -25,6 +16,7 @@ Format your response as a JSON object with ALL three of these exact keys:
 Example output:
 {{
     "query": "machine learning transformer architecture explained",
+    "aspect": "technical architecture",
     "rationale": "Understanding the fundamental structure of transformer models"
 }}
 </EXAMPLE>
